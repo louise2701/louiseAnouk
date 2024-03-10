@@ -1,0 +1,14 @@
+/* Ajoutez vos styles CSS personnalisés ici */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  
+  #app {
+    text-align: center;
+    margin-top: 50px;
+  }
+  
+  /* Vous pouvez ajouter plus de styles selon vos besoins */
+  

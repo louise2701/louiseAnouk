@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./my-new-project
+      dockerfile: Dockerfile
+    volumes:
+      - C:\Users\louis\Downloads\projet-animals2\my-new-project:/app
+    ports:
+      - "3000:3000"
+    networks:
+      - isolated_network
+    depends_on:
+      - backend-animals
+      - backend-staff
+
+  backend-animals:
+    build:
+      context: ./backend-animals
+      dockerfile: Dockerfile.app  # Utiliser Dockerfile.app pour backend-animals
+    volumes:
+      - ./backend-animals:/app
+      - backend-animals-data:/app/data
+    networks:
+      - isolated_network
+    depends_on:
+      - backend-animals-db
+    ports:
+      - "8080:8080"
+
+  backend-animals-db:
+    build:
+      context: ./backend-animals
+      dockerfile: Dockerfile.db  # Utiliser Dockerfile.db pour backend-animals-db
+    environment:
+      POSTGRES_DB: "animal_db"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "zaL2520"
+    volumes:
+      - backend-animals-data:/var/lib/postgresql/data
+    networks:
+      - isolated_network
+
+  backend-staff:
+    build:
+      context: ./backend-staff
+      dockerfile: Dockerfile.app  # Utiliser Dockerfile.app pour backend-staff
+    volumes:
+      - ./backend-staff:/app
+      - backend-staff-data:/app/data
+    networks:
+      - isolated_network
+    depends_on:
+      - backend-staff-db
+    ports:
+      - "8090:8090"
+
+  backend-staff-db:
+    build:
+      context: ./backend-staff
+      dockerfile: Dockerfile.db  # Utiliser Dockerfile.db pour backend-staff-db
+    environment:
+      POSTGRES_DB: "staff_db"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "password"  # Assurez-vous de remplir les informations nécessaires
+    volumes:
+      - backend-staff-data:/var/lib/postgresql/data
+    networks:
+      - isolated_network
+
+networks:
+  isolated_network:
+    driver: bridge
+
+volumes:
+  backend-animals-data:
+  backend-staff-data:
