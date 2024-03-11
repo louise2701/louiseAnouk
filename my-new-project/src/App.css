@@ -78,6 +78,18 @@ button:hover {
   background-color: #45a049;
 }
 
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  margin-bottom: 10px; /* Adjust the margin as needed */
+}
+
+button {
+  margin-left: 10px; /* Adjust the margin as needed */
+}
 
 /* New style for the "Add Animal" button */
 .add-animal-button {

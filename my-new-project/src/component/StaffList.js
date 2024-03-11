@@ -9,7 +9,7 @@ function StaffList() {
     diploma: '',
     experience: '',
     number: '',
-    age: null,
+    age: '',
   });
   const BASE_URL = 'http://localhost:8090';
   const [searchCriteria, setSearchCriteria] = useState({
@@ -18,7 +18,7 @@ function StaffList() {
     diploma: '',
     experience: '',
     number: '',
-    age: null,
+    age: '',
   });
 
   useEffect(() => {
@@ -33,6 +33,7 @@ function StaffList() {
       console.error('Error fetching staff:', error.message);
     }
   };
+  const [selectedStaff, setSelectedStaff] = useState(null);
 
   const handleAddStaff = async () => {
     try {
@@ -44,21 +45,45 @@ function StaffList() {
         diploma: '',
         experience: '',
         number: '',
-        age: null,
+        age: '',
       });
     } catch (error) {
       console.error('Error adding staff:', error.message);
     }
   };
-
-  const handleUpdateStaff = async (id, updatedFields) => {
+  const handleSelectStaff = (person) => {
+    setSelectedStaff(person);
+    // Set the fields in the form with the selected staff member's information
+    setNewStaff({
+      name: person.name,
+      role: person.role,
+      diploma: person.diploma,
+      experience: person.experience,
+      number: person.number,
+      age: person.age,
+    });
+  };
+  
+  
+  const handleUpdateStaff = async () => {
     try {
-      const response = await axios.patch(`${BASE_URL}/personnel/update/${id}`, updatedFields);
-      if (response.status === 200) {
-        fetchStaff();
-      } else {
-        console.error('Error updating staff:', response.data.message);
+      if (!selectedStaff) {
+        return;
       }
+  
+      await axios.patch(`${BASE_URL}/personnel/update/${selectedStaff.id}`, newStaff);
+      fetchStaff();
+  
+      // Reset the form and selected staff member
+      setNewStaff({
+        name: '',
+        role: '',
+        diploma: '',
+        experience: '',
+        number: '',
+        age: '',
+      });
+      setSelectedStaff(null);
     } catch (error) {
       console.error('Error updating staff:', error.message);
     }
@@ -81,48 +106,21 @@ function StaffList() {
     <div>
        <h2>List of Staff Members</h2>
       <div className="search-container">
-        <label>Search by Name:</label>
-        <input
-          type="text"
-          value={searchCriteria.name}
-          onChange={e => setSearchCriteria({ ...searchCriteria, name: e.target.value })}
-        />
-        <br />
+     
         <label>Search by Role:</label>
         <input
           type="text"
           value={searchCriteria.role}
           onChange={e => setSearchCriteria({ ...searchCriteria, role: e.target.value })}
         />
-        <br />
-        <label>Search by Diploma:</label>
-        <input
-          type="text"
-          value={searchCriteria.diploma}
-          onChange={e => setSearchCriteria({ ...searchCriteria, diploma: e.target.value })}
-        />
-        <br />
+     <br />
         <label>Search by Experience:</label>
         <input
           type="text"
           value={searchCriteria.experience}
           onChange={e => setSearchCriteria({ ...searchCriteria, experience: e.target.value })}
         />
-        <br />
-        <label>Search by Number:</label>
-        <input
-          type="text"
-          value={searchCriteria.number}
-          onChange={e => setSearchCriteria({ ...searchCriteria, number: e.target.value })}
-        />
-        <br />
-        <label>Search by Age:</label>
-        <input
-          type="number"
-          value={searchCriteria.age}
-          onChange={e => setSearchCriteria({ ...searchCriteria, age: parseInt(e.target.value) || null })}
-        />
-        <br />
+       
         <button onClick={fetchStaff}>Search</button>
       </div>
 
@@ -130,10 +128,9 @@ function StaffList() {
         {staff.map(person => (
           <li key={person.id}>
             <span>{person.name}</span> - <span>{person.role}</span>
-            <button onClick={() => handleUpdateStaff(person.id, { role: 'Updated Role' })}>
-              Update Role
-            </button>
+            
             <button onClick={() => handleDeleteStaff(person.id)}>Delete</button>
+            <button onClick={() => handleSelectStaff(person)}>Update</button>
           </li>
         ))}
       </ul>
@@ -188,7 +185,9 @@ function StaffList() {
           />
         </div>
 
-        <button onClick={handleAddStaff}>Add Staff Member</button>
+        <button onClick={selectedStaff ? handleUpdateStaff : handleAddStaff}>
+  {selectedStaff ? "Update Staff Member" : "Add Staff Member"}
+</button>
       </div>
     </div>
   );

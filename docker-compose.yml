@@ -6,11 +6,11 @@ services:
       context: ./my-new-project
       dockerfile: Dockerfile
     volumes:
-      - C:\Users\louis\Downloads\projet-animals2\my-new-project:/app
+      - ./my-new-project:/app #ici on crée un bind mount qui utilise le chemin absolue qui pointe sur le dossier contenant le frontend pour permettre la connexion avec le conteneur Docker
     ports:
       - "3000:3000"
     networks:
-      - isolated_network
+      - frontend-backend-network
     depends_on:
       - backend-animals
       - backend-staff
@@ -20,10 +20,11 @@ services:
       context: ./backend-animals
       dockerfile: Dockerfile.app  # Utiliser Dockerfile.app pour backend-animals
     volumes:
-      - ./backend-animals:/app
-      - backend-animals-data:/app/data
+      - ./backend-animals:/app # mise à jour rapide du code sans reconstruire l'image docker
+      - backend-animals-data:/app/data # utilise le volume backend-animals-data pour monter un dossier persistant /app/data 
     networks:
-      - isolated_network
+      - frontend-backend-network
+      - backend-animal-db-network
     depends_on:
       - backend-animals-db
     ports:
@@ -36,21 +37,23 @@ services:
     environment:
       POSTGRES_DB: "animal_db"
       POSTGRES_USER: "postgres"
-      POSTGRES_PASSWORD: "zaL2520"
+      POSTGRES_PASSWORD: "password"
+    
     volumes:
-      - backend-animals-data:/var/lib/postgresql/data
+      - backend-animals-data:/var/lib/postgresql/data 
     networks:
-      - isolated_network
+      - backend-animal-db-network
 
   backend-staff:
     build:
       context: ./backend-staff
       dockerfile: Dockerfile.app  # Utiliser Dockerfile.app pour backend-staff
     volumes:
-      - ./backend-staff:/app
-      - backend-staff-data:/app/data
+      - ./backend-staff:/app 
+      - backend-staff-data:/app/data #utilise un volume différent de backend-animals
     networks:
-      - isolated_network
+      - frontend-backend-network
+      - backend-staff-db-network
     depends_on:
       - backend-staff-db
     ports:
@@ -63,14 +66,19 @@ services:
     environment:
       POSTGRES_DB: "staff_db"
       POSTGRES_USER: "postgres"
-      POSTGRES_PASSWORD: "password"  # Assurez-vous de remplir les informations nécessaires
+      POSTGRES_PASSWORD: "password" 
+      
     volumes:
       - backend-staff-data:/var/lib/postgresql/data
     networks:
-      - isolated_network
+      - backend-staff-db-network
 
-networks:
-  isolated_network:
+networks: #un réseau qui relit le frontend et le backend, un réseau propre au backend-animal, un réseau propre au backend-staff
+  frontend-backend-network:
+    driver: bridge
+  backend-animal-db-network:
+    driver: bridge
+  backend-staff-db-network:
     driver: bridge
 
 volumes:
